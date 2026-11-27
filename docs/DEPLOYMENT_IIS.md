@@ -24,6 +24,11 @@ dotnet publish src/CRMMini.API/CRMMini.API.csproj -c Release -o ./publish/api
 ```
 Copy toàn bộ thư mục `./publish/api` lên thư mục deploy trên server (ví dụ `C:\inetpub\crmmini-api`). Kiểm tra đã có file `web.config` sử dụng `AspNetCoreModuleV2`.
 
+> **Tùy chọn tự động hóa (Local/Staging):** Có thể chạy script [scripts/Deploy-IIS.ps1](../scripts/Deploy-IIS.ps1) bằng quyền Administrator để tự động copy `publish/api`, tạo AppPool `CRMMiniApiPool`, tạo Site `CRMMiniAPI` (cổng `5080`), cấp quyền NTFS + SQL Server cho `IIS APPPOOL\CRMMiniApiPool` và kiểm tra `/health/ready`:
+> ```bat
+> powershell -NoProfile -ExecutionPolicy Bypass -File "W:\CRM Mini\scripts\Deploy-IIS.ps1"
+> ```
+
 ---
 
 ## 3. Cấu hình IIS Site, Application Pool & Quyền Thư mục

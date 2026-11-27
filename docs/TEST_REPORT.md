@@ -78,5 +78,11 @@
     - `GET /swagger/v1/swagger.json` trả `200 OK`.
     - `GET /api/v1/customers` không có JWT trả `401 Unauthorized`.
     - `POST /api/v1/auth/login` (`staff@crmmini.local`) cấp JWT thành công; `GET /api/v1/customers` trả `totalCount = 1` (`Lê Minh Khách`); `GET /api/v1/dashboard/summary` trả `Customers = 1, Leads = 1, OpenOpps = 1, OpenPipeline = 250000000.00`.
-- **Phạm vi chưa kiểm chứng trực tiếp:**
-  - **IIS Live Server:** IIS (`W3SVC`) và `.NET 10 Hosting Bundle` chưa bật/cài trên máy hiện tại (cần chạy bằng quyền Administrator). Gói `Release` (`publish/api`) và `web.config` đã publish sẵn sàng theo [DEPLOYMENT_IIS.md](DEPLOYMENT_IIS.md).
+- **Đã kiểm chứng thực tế trên IIS Local (`CRMMiniAPI`, cổng `http://localhost:5080`) + `.NET 10 Hosting Bundle` (`10.0.15`):**
+  - Đã bật IIS (`W3SVC`), cài `Microsoft.DotNet.HostingBundle.10` (`AspNetCoreModuleV2` `aspnetcorev2.dll` `10.0.15`) và triển khai qua [Deploy-IIS.ps1](../scripts/Deploy-IIS.ps1) vào `C:\inetpub\crmmini-api` với AppPool `CRMMiniApiPool` (`No Managed Code`).
+  - Đã kiểm chứng trực tiếp qua IIS (`http://localhost:5080`):
+    - `/health` (`200 Healthy`), `/health/ready` (`200 Healthy` xác nhận kết nối SQL Server qua tài khoản `IIS APPPOOL\CRMMiniApiPool`).
+    - `/swagger/index.html` (`200 OK`) và `/swagger/v1/swagger.json` (`200 OK`).
+    - `/api/v1/customers` chưa có token trả `401 Unauthorized`.
+    - `POST /api/v1/auth/login` (`staff@crmmini.local`) cấp JWT thành công; `/api/v1/customers` trả `totalCount = 1` (`Lê Minh Khách`); `/api/v1/dashboard/summary` trả `Customers = 1, Leads = 1, OpenOpps = 1, OpenPipeline = 250000000.00`; `/api/v1/dashboard/pipeline` trả đủ `6` stages.
+- **Lưu ý môi trường:** IIS local đang cấu hình binding HTTP cổng `5080` cho kiểm thử; khi đưa lên Windows Server staging/production chính thức cần gắn thêm HTTPS binding (cổng `443` + chứng chỉ SSL) và đặt `Swagger__Enabled=false` trên Production theo [DEPLOYMENT_IIS.md](DEPLOYMENT_IIS.md).
