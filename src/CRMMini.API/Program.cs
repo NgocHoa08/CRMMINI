@@ -31,6 +31,9 @@ if (!app.Environment.IsEnvironment("Testing"))
     app.UseHttpsRedirection();
 }
 
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.UseCors("FrontendCors");
 app.UseRateLimiter();
 app.UseAuthentication();
