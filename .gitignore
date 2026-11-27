@@ -1,0 +1,33 @@
+# .NET / Visual Studio / Rider
+bin/
+obj/
+out/
+publish/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+.idea/
+TestResults/
+coverage/
+*.trx
+*.coverage
+
+# Secrets and local environment overrides
+appsettings.Local.json
+appsettings.*.local.json
+*.pfx
+*.key
+.env
+.env.*
+
+# SQLite / temporary test databases
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+
+# OS files
+Thumbs.db
+.DS_Store

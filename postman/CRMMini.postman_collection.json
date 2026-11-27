@@ -1,0 +1,398 @@
+{
+  "info": {
+    "_postman_id": "7f6340c2-9d98-4b75-8e62-75d3b5d9a101",
+    "name": "CRM Mini API v1",
+    "description": "Bộ Postman Collection kiểm thử MVP CRM Mini Backend (.NET 10) theo kịch bản demo Mục 12.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "0. Health & OpenAPI",
+      "item": [
+        {
+          "name": "Health Live",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": "{{baseUrl}}/health"
+          }
+        },
+        {
+          "name": "Health Ready (DB)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": "{{baseUrl}}/health/ready"
+          }
+        },
+        {
+          "name": "OpenAPI v1 JSON",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": "{{baseUrl}}/swagger/v1/swagger.json"
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Auth & Users",
+      "item": [
+        {
+          "name": "Unauthorized Check (Expect 401)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/customers"
+          }
+        },
+        {
+          "name": "Register New Staff",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"demo_user_01\",\n  \"email\": \"demo01@crmmini.local\",\n  \"password\": \"{{demoPassword}}\",\n  \"fullName\": \"Nguyen Demo\",\n  \"phone\": \"0909888777\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/register"
+          }
+        },
+        {
+          "name": "Login (Save JWT & RefreshToken)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const data = pm.response.json();",
+                  "  pm.environment.set('accessToken', data.accessToken);",
+                  "  pm.environment.set('refreshToken', data.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userNameOrEmail\": \"{{loginIdentifier}}\",\n  \"password\": \"{{demoPassword}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/login"
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const data = pm.response.json();",
+                  "  pm.environment.set('accessToken', data.accessToken);",
+                  "  pm.environment.set('refreshToken', data.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/refresh"
+          }
+        },
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/users/me"
+          }
+        },
+        {
+          "name": "Change My Password",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"{{demoPassword}}\",\n  \"newPassword\": \"{{newDemoPassword}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/users/me/password"
+          }
+        },
+        {
+          "name": "Get Users (Admin/Manager)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/users?page=1&pageSize=20"
+          }
+        },
+        {
+          "name": "Get Teams (Admin/Manager)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/teams"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/logout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Companies & Customers",
+      "item": [
+        {
+          "name": "Create Company",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.environment.set('companyId', pm.response.json().id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Cong ty Co phan Cong nghe ABC\",\n  \"taxCode\": \"0108887776\",\n  \"industry\": \"Software\",\n  \"website\": \"https://abc.example.local\",\n  \"phone\": \"02438889999\",\n  \"email\": \"info@abc.example.local\",\n  \"address\": \"Ha Noi\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/companies"
+          }
+        },
+        {
+          "name": "List Companies",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/companies?search=ABC&page=1&pageSize=10&sortBy=name&sortDir=asc"
+          }
+        },
+        {
+          "name": "Create Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.environment.set('customerId', pm.response.json().id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Tran Van Khach\",\n  \"email\": \"khach.abc@example.local\",\n  \"phone\": \"0912000111\",\n  \"jobTitle\": \"CTO\",\n  \"address\": \"Ha Noi\",\n  \"status\": \"Active\",\n  \"notes\": \"Khach hang doanh nghiep\",\n  \"companyId\": \"{{companyId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/customers"
+          }
+        },
+        {
+          "name": "List & Filter Customers",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/customers?status=Active&page=1&pageSize=10&sortBy=fullName&sortDir=asc"
+          }
+        },
+        {
+          "name": "Get Customer History",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/customers/{{customerId}}/history"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Leads & Opportunities",
+      "item": [
+        {
+          "name": "Create Lead",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.environment.set('leadId', pm.response.json().id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Hoang Tiem Nang\",\n  \"email\": \"lead.hoang@example.local\",\n  \"phone\": \"0988777666\",\n  \"companyName\": \"Cong ty TNHH Minh Phat\",\n  \"source\": \"Website\",\n  \"estimatedValue\": 180000000,\n  \"notes\": \"Dang ky tu van qua landing page\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/leads"
+          }
+        },
+        {
+          "name": "Update Lead to Qualified",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Hoang Tiem Nang\",\n  \"email\": \"lead.hoang@example.local\",\n  \"phone\": \"0988777666\",\n  \"companyName\": \"Cong ty TNHH Minh Phat\",\n  \"source\": \"Website\",\n  \"status\": \"Qualified\",\n  \"estimatedValue\": 180000000,\n  \"notes\": \"Da xac minh nhu cau\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/leads/{{leadId}}"
+          }
+        },
+        {
+          "name": "Convert Lead (Create Customer + Company + Opportunity)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const res = pm.response.json();",
+                  "  pm.environment.set('customerId', res.customerId);",
+                  "  if (res.opportunityId) pm.environment.set('opportunityId', res.opportunityId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"createCompanyIfMissing\": true,\n  \"createOpportunity\": true,\n  \"opportunityTitle\": \"Trien khai CRM Minh Phat\",\n  \"opportunityValue\": 180000000\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/leads/{{leadId}}/convert"
+          }
+        },
+        {
+          "name": "Change Opportunity Stage",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetStage\": \"Proposal\",\n  \"notes\": \"Da gui de xuat va bao gia chi tiet\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/opportunities/{{opportunityId}}/stage"
+          }
+        },
+        {
+          "name": "Get Opportunity History",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/opportunities/{{opportunityId}}/history"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Activities & Dashboard",
+      "item": [
+        {
+          "name": "Create Activity",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.environment.set('activityId', pm.response.json().id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"Meeting\",\n  \"subject\": \"Hop trinh bay giai phap CRM\",\n  \"description\": \"Trinh bay luong Lead -> Opportunity\",\n  \"scheduledAt\": \"2026-12-01T03:00:00Z\",\n  \"reminderAt\": \"2026-12-01T02:00:00Z\",\n  \"customerId\": \"{{customerId}}\",\n  \"opportunityId\": \"{{opportunityId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/activities"
+          }
+        },
+        {
+          "name": "List Activities",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/activities?page=1&pageSize=20"
+          }
+        },
+        {
+          "name": "Dashboard Summary",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/dashboard/summary?timeZoneOffsetMinutes=420"
+          }
+        },
+        {
+          "name": "Dashboard Pipeline",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/dashboard/pipeline"
+          }
+        },
+        {
+          "name": "Dashboard Activities",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/dashboard/activities?timeZoneOffsetMinutes=420"
+          }
+        }
+      ]
+    }
+  ]
+}
